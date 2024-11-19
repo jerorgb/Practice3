@@ -72,7 +72,7 @@ class StreamToTextBrowser(io.StringIO):
         super().write(text)
         self.text_browser.setPlainText(self.getvalue())  # Update QTextBrowser with the new output
 
-
+#main window methods
 class Widget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
