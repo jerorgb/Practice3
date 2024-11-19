@@ -9,7 +9,7 @@ En un bloque de texto en la aplicacion, con una representación estructurada del
 En una ventana gráfica, mostrando el árbol de derivación completo.
 
 
-#Requisitos
+- Requisitos -
 Para ejecutar este código, necesita instalar NLTK y PyQT:
 
 pip install nltk
