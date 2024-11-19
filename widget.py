@@ -15,39 +15,40 @@ gramatica = CFG.fromstring("""
 # Create a parser using the grammar
 parser = ChartParser(gramatica)
 
+#tokenize string
 def tokenize_expression(expression):
     tokens = re.findall(r'[a-zA-Z0-9]+|[()+\-*/]', expression)
     return tokens
 
-
+#derivator from expresion to process
 def grammarBreaker(lhs, rhs, seen):
     rhs_str = [str(symbol) if isinstance(symbol, str) else str(symbol) for symbol in rhs]
 
-    # Solo imprimir si esta combinación aún no ha sido vista
     if (lhs, tuple(rhs)) not in seen:
         seen.add((lhs, tuple(rhs)))
         print(f"{lhs} -> {' '.join(rhs_str)}")
 
-# Función para hacer un seguimiento del paso a paso
+# Derivation process
 def stepperTree(parser, expression):
     chart = parser.chart_parse(expression)
 
-    seen = set()  # Conjunto para evitar imprimir combinaciones repetidas
+    seen = set()  # Set to avoid repeated printings
 
-    # Iterar por todas las derivaciones del chart
+    # iterate derivation of chart
     for edge in chart:
         lhs = edge.lhs()
         rhs = edge.rhs()
 
-        # Solo procesamos si el LHS es un Nonterminal
+        #Only process if its a Nonterminal
         if isinstance(lhs, Nonterminal):
             grammarBreaker(lhs, rhs, seen)
 
+#Extractor from syntax tree to AST tree
 def ast(tree):
-    """Simplifies the parse tree to an AST representation."""
+
     if len(tree) == 1 and isinstance(tree[0], str):
-        if tree[0] == '(' or tree[0] == ')':
-            return None  # Ignore parentheses
+        if tree[0] == '(' or tree[0] == ')':    # Ignore parentheses
+            return None
         return Tree(tree[0], [tree[0]])  # Leaf node
     lhs = tree.label()
     if lhs in ['E', 'T', 'F']:
@@ -60,11 +61,13 @@ def ast(tree):
                 right = ast(tree[2])
                 return Tree(operator, [left, right])
 
+#text selector
 class StreamToTextBrowser(io.StringIO):
     def __init__(self, text_browser):
         super().__init__()
         self.text_browser = text_browser
 
+    #printer
     def write(self, text):
         super().write(text)
         self.text_browser.setPlainText(self.getvalue())  # Update QTextBrowser with the new output
@@ -84,32 +87,31 @@ class Widget(QWidget):
 
         # Redirect print to QTextEdit
         stream = StreamToTextBrowser(self.ui.derivationTxt)
-
-        # Set sys.stdout to the custom stream
         sys.stdout = stream
 
-        # Run the process and capture the output
+        #Derivation process
         stepperTree(parser, butchered_expresion)
 
+        #set output channel
         stream = StreamToTextBrowser(self.ui.syntaxTree)
         sys.stdout = stream
 
-        # Step 1: Generate the parse tree
         for tree in parser.parse(butchered_expresion):
             print("Original Derivation Tree:")
-            tree.pretty_print()  # Display the tree in the console
-            tree.draw()  # Open a window with the syntactic tree
+            tree.pretty_print()
+            tree.draw() #window showcase
 
+            #set output channel
             stream = StreamToTextBrowser(self.ui.astTree)
             sys.stdout = stream
 
-            # Now simplify the tree to get the AST
+            #extraction process
             simplified_ast = ast(tree)
             print("Simplified AST:")
-            simplified_ast.pretty_print()  # This will print the AST if it's a valid tree
-            simplified_ast.draw()
+            simplified_ast.pretty_print()
+            simplified_ast.draw() #window showcase 
 
-        # Reset sys.stdout to its original value
+        # Reset output channel to default
         sys.stdout = sys.__stdout__
 
 
